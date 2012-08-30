@@ -1,0 +1,48 @@
+#unsourced-overlay {
+    position: fixed;
+    top: 32px;
+    left: 32px;
+    z-index: 100;
+/*    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+*/
+}
+
+
+#unsourced-overlay:hover {
+  opacity: 0.5;
+}
+
+/****
+ * warning label 
+ */
+
+.unsourced-label {
+  margin: 1em 0;
+  padding: 0.5em;
+  display: block;
+  position: relative;
+  color: #000;
+  background-color: #fbd415;
+  border-radius: 0.5em;
+  border: 0.4em solid #F8BB08; 
+  transform: rotate(-15deg);
+  -webkit-transform: rotate(-15deg);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.unsourced-label-icon {
+  float: left;
+  clear: right;
+}
+
+.unsourced-label-bod {
+  margin-left: 40px;
+}
+.unsourced-label-head {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+

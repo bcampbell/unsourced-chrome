@@ -1,0 +1,20 @@
+{
+  "name": "unsourced.org",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Display sources for news articles",
+  "background": {
+    "scripts": ["js/parseuri.js","js/jquery.js","js/background.js"]
+  },
+  "page_action": {
+    "default_icon": "img/icon_off.png",
+    "default_title": "Spoooooooon!"
+  },
+  "permissions": [
+    "webNavigation",
+    "tabs", 
+    "http://*/*",
+    "https://*/*"
+  ]
+}
+
