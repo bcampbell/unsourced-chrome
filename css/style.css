@@ -1,0 +1,196 @@
+/**********************************************************************
+ * BASE STYLES
+ */
+
+
+body {
+    font-family: Helvetica, Arial, Sans-Serif;
+    margin: 0;
+    padding: 1em;
+    font-size: smaller;
+    color: #595959;
+}
+
+
+a { text-decoration:none; }
+a:link { color: #262626; }
+a:visited { color: #000; }
+a:hover { color: #262626; text-decoration: underline; }
+a:visited:hover { color: #000; }
+
+
+
+
+
+/****************************************
+ * MODULES
+ */
+
+/*****
+ * a user-presented timestamp (eg when an action was performed)
+ */
+.timestamp {
+    font-style: italic;
+    color: #808080;
+    font-size: small;
+}
+
+/*****/
+.pubdate {
+}
+
+/*****/
+.publication {
+    font-style: italic;
+}
+
+/*****/
+.doi {
+    font-size: 75%;
+    display: block;
+}
+
+/*****/
+.srclist {
+    list-style: none;
+    padding: 0;
+    border-bottom: 1px dotted #808080;
+}
+
+
+
+
+
+/*****
+ * details about a source (paper, pr, other...)
+ */
+.src {
+  border-top: 1px dotted #808080;
+  padding: 0.5em 0.5em 0.5em 20px;
+}
+
+
+.src:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+.src-paper { background: url(/img/icon-paper.png) no-repeat 0px 8px; }
+.src-pr    { background: url(/img/icon-pr.png) no-repeat 0px 8px; }
+.src-other { background: url(/img/icon-other.png) no-repeat 0px 8px; }
+
+
+/****/
+.src-info {
+}
+
+.src-info>a {
+    display: block;
+}
+
+
+
+/*****/
+.btn {
+    border: none;
+    border-radius: 4px;
+    background-color: #24aaf2;
+    color: #fff;
+    margin: 0.2em 0;
+    font-weight: bold;
+    padding: 0.15em 1em;
+    margin: 0.2em 0; 
+    display: inline-block;
+}
+
+a.btn,
+input.btn
+ { color: #fff; }
+
+input.btn {
+    font-size: 1em; /* fudge to unify input buttons... */
+}
+
+
+.btn:hover,
+.btn.is-active {
+    color: #fff;
+    background-color: #66ffff;
+    text-decoration: none;
+}
+
+a.btn:visited {
+    color: #fff;
+}
+
+.btn-major {
+    padding: 0.5em 1em;
+    font-size: 125%;
+}
+
+/*****
+ * a wrapper around a button (eg a form, to allow POSTs)
+ */
+.btn-wrapper {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+
+/****/
+.comment-cnt {
+    color: #ffffff;
+    background-color: #1F52A2;
+    border-radius: 4px;
+    padding: 0.1em 0px;
+    width: 24px;
+    display: inline-block;
+    text-align: center;
+    font-size: 90%;
+    position: relative;
+}
+
+.comment-cnt:after {
+   content: "";
+   display: block;
+   position: absolute;
+   left: 24px;
+   top: 5px;
+   width: 0;
+   height: 0;
+   border: 3px solid;
+   border-color: transparent  transparent transparent #1F52A2;
+}
+
+
+
+
+/****
+ * warning label 
+ */
+
+.label {
+  margin: 1em 0;
+  padding: 0.5em;
+  display: block;
+  position: relative;
+  color: #000;
+  background-color: #fbd415;
+  border-radius: 0.5em;
+  border: 0.4em solid #F8BB08; 
+}
+
+.label-icon {
+  float: left;
+  clear: right;
+}
+
+.label-bod {
+  margin-left: 40px;
+}
+.label-head {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+

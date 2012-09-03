@@ -2,10 +2,10 @@
 var label_template = '\
 <div class="unsourced-label">\
 \
-  <img src="{{icon_url}}" alt="{{prettyname}}" />\
-  <p>WARNING<br/>\
-  {{description}}.\
-  </p>\
+  <img class="unsourced-label-icon" src="{{icon_url}}" alt="{{prettyname}}" />\
+  <div class="unsourced-label-bod"><div class="unsourced-label-head">WARNING</div>\
+  {{description}}\
+  </div>\
 </div>\
 ';
 

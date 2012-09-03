@@ -6,12 +6,10 @@
 /*    transform: rotate(-45deg);
     -webkit-transform: rotate(-45deg);
 */
+    font-size: 12px;
+    font-family: Helvetica, Arial, Sans-Serif;
 }
 
-
-#unsourced-overlay:hover {
-  opacity: 0.5;
-}
 
 /****
  * warning label 
@@ -29,7 +27,15 @@
   transform: rotate(-15deg);
   -webkit-transform: rotate(-15deg);
   font-size: 12px;
-  pointer-events: none;
+
+  max-width: 16em; 
+  opacity: 0.5;
+  -webkit-transition: all 0.2s ease-in-out;
+}
+
+.unsourced-label:hover {
+  opacity: 1;
+  -webkit-transform: rotate(-10deg) scale(1.25);
 }
 
 .unsourced-label-icon {

@@ -82,18 +82,19 @@ var executeScriptsSynchronously = function (tab_id, files, callback) {
 /* */
 function show_results(tabid, details) {
     if(details.status=='found') {
-        chrome.pageAction.setIcon({'tabId': tabid, 'path': "img/icon.png"});
-        chrome.pageAction.setPopup({'tabId': tabid, 'popup': "html/popup.html?"});
+       var title = details.sources.length + " sources, " + details.labels.length + " labels";
+       chrome.pageAction.setIcon({'tabId': tabid, 'path': "/img/icon.png"});
+       chrome.pageAction.setTitle({'tabId': tabid, 'title': title});
     } else {
-        chrome.pageAction.setIcon({'tabId': tabid, 'path': "img/icon_off.png"});
+        chrome.pageAction.setIcon({'tabId': tabid, 'path': "/img/icon_off.png"});
     }
+    chrome.pageAction.setPopup({'tabId': tabid, 'popup': "/html/popup.html"});
     chrome.pageAction.show(tabid);
 
     console.log("Inject content stuff into tab", tabid);
     /* inject the extra content scripts and css into the page */
-    chrome.tabs.insertCSS(tabid, {file: "/css/churnalism.css"});
     chrome.tabs.insertCSS(tabid, {file: "/css/unsourced.css"});
-    executeScriptsSynchronously(tabid, ["js/jquery.js", "js/content.js"],
+    executeScriptsSynchronously(tabid, ["/js/lib/jquery.js", "/js/content.js"],
         function() {
 
         /* pass the article details in to the content script to present */
@@ -125,7 +126,7 @@ function doLookup(tabid,url) {
     },
     error: function(jqXHR, textStatus, errorThrown) {
       console.log("Error:", jqXHR, textStatus, errorThrown);
-      updateTabState(tabid, {lookup:'done'});
+      updateTabState(tabid, {lookup:'failed'});
     }
   });
 }
