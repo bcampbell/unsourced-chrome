@@ -6,6 +6,7 @@
   "background": {
     "scripts": ["js/lib/parseuri.js","js/lib/jquery.js","js/background.js"]
   },
+  "options_page": "html/options.html",
   "page_action": {
     "default_icon": "img/icon_off.png",
     "default_title": "unsourced.org"

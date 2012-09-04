@@ -17,8 +17,8 @@ $(document).ready(function() {
       var tabid = tab.id;
       var bg = chrome.extension.getBackgroundPage();
       /* check to see if background page has data associated with this tab */
-      if(bg.tabTracker[tabid] !== undefined) {
-        showDetails(bg.tabTracker[tabid].artDetails);
+      if(bg.TabTracker[tabid] !== undefined) {
+        showDetails(bg.TabTracker[tabid].artDetails);
       }
     }); 
   }); 
