@@ -2,7 +2,7 @@
   "name": "unsourced.org",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "Display sources for news articles",
+  "description": "Display sources and warning labels for news articles",
   "background": {
     "scripts": ["js/lib/parseuri.js","js/lib/jquery.js","js/background.js"]
   },
