@@ -591,10 +591,10 @@ var executeScriptsSynchronously = function (tab_id, files, callback) {
 function show_results(tabid, details) {
     if(details.status=='found') {
        var title = details.sources.length + " sources, " + details.labels.length + " labels";
-       chrome.pageAction.setIcon({'tabId': tabid, 'path': "/img/icon.png"});
+       chrome.pageAction.setIcon({'tabId': tabid, 'path': "/img/sourced.png"});
        chrome.pageAction.setTitle({'tabId': tabid, 'title': title});
     } else {
-        chrome.pageAction.setIcon({'tabId': tabid, 'path': "/img/icon_off.png"});
+        chrome.pageAction.setIcon({'tabId': tabid, 'path': "/img/unsourced.png"});
     }
     chrome.pageAction.setPopup({'tabId': tabid, 'popup': "/html/popup.html"});
     chrome.pageAction.show(tabid);
