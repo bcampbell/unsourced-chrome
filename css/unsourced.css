@@ -24,18 +24,19 @@
   background-color: #fbd415;
   border-radius: 0.5em;
   border: 0.4em solid #F8BB08; 
-  transform: rotate(-15deg);
-  -webkit-transform: rotate(-15deg);
+  transform: translate3d(0,0,0) rotate(-15deg);
+  -webkit-transform: translate3d(0,0,0) rotate(-15deg);
   font-size: 12px;
 
   max-width: 16em; 
-  opacity: 0.5;
+/*  opacity: 0.5; */
   -webkit-transition: all 0.2s ease-in-out;
 }
 
 .unsourced-label:hover {
-  opacity: 1;
-  -webkit-transform: rotate(-10deg) scale(1.25);
+/*  opacity: 1; */
+  transform: translate3d(0,0,0) rotate(0deg) scale(1.25);
+  -webkit-transform: translate3d(0,0,0) rotate(0deg) scale(1.25);
 }
 
 .unsourced-label-icon {
