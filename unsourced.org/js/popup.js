@@ -1,26 +1,51 @@
-$(document).ready(function() {
-
-  function showDetails(artDetails) {
-
-    var tmplName = artDetails.status=='found' ? 'popup-found-tmpl':'popup-notfound-tmpl';
+function display(tmplName,params)
+{
     var template = document.getElementById(tmplName).innerHTML;
-    var parsed = Ashe.parse(template, artDetails);
+    var parsed = Ashe.parse(template, params);
     document.getElementById('content').innerHTML = parsed;
+}
+
+
+/* chrome specifics */
+
+
+function init_popup()
+{
+  // var submit_url = restoreOptions().search_server + "/addarticle?url=" + encodeURIComponent(tab.url);
+
+  // we want to pop it up on the currently-active tab
+  chrome.tabs.query( {
+    "windowId": chrome.windows.WINDOW_ID_CURRENT,
+    "active": true
+  }, function (tabs) {
+    var tab=tabs[0];  // current tab
+
+    console.log("Popup, for tab" + tab.id);
+
+    var bg = chrome.extension.getBackgroundPage();
+    var state = bg.TabTracker[tab.id];
+
+    if( state === undefined ) {
+      var dummy_state = {
+        "lookupState": "none",
+        "lookupDetails": null,
+        'submit_url': null  // TODO! xyzzy
+      };
+
+      display('popup-details-tmpl', dummy_state);
+      // not tracking this page
+    } else {
+      display('popup-details-tmpl', state);
+    }
+  });
+}
+
+chrome.extension.onRequest.addListener( function(request, sender, response) {
+  var method = request.method;
+  if (method == 'refresh') {
+    init_popup();
   }
-
-
-  /* jump through hoops to get tabid of tab which opened this popup.
-     got to be a better way... */
-  chrome.windows.getCurrent(function(win){ 
-    var windowId = win.id; 
-    chrome.tabs.getSelected(windowId, function(tab){ 
-      var tabid = tab.id;
-      var bg = chrome.extension.getBackgroundPage();
-      /* check to see if background page has data associated with this tab */
-      if(bg.TabTracker[tabid] !== undefined) {
-        showDetails(bg.TabTracker[tabid].artDetails);
-      }
-    }); 
-  }); 
-
 });
+
+init_popup();
+
