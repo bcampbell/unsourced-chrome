@@ -11,10 +11,11 @@
 
 console.log("HELLO WORLD!");
 
-function UnsourcedState(goFunc,guiUpdateFunc) {
+function UnsourcedState(guiUpdateFunc) {
   this._contentReady = false;
-  this._goFunc = goFunc;
   this._guiUpdateFunc = guiUpdateFunc;
+
+  this.overlaysApplied = false; // have overlays been injected into the page?
 
   this.lookupState = "none"; // none, pending, ready, error
   this.lookupResults = null;  // only set if state is 'ready'
@@ -32,9 +33,6 @@ UnsourcedState.prototype.lookupFinished = function(lookupResults) {
     this.lookupState = "ready";
 
     this._guiUpdateFunc(this);
-    if(this._contentReady) {
-      this._goFunc();
-    } 
   }
 };
 
@@ -50,15 +48,12 @@ UnsourcedState.prototype.contentReady = function(pageDetails) {
   if(this._contentReady!=true) {
     this._contentReady = true;
     this._guiUpdateFunc(this);
-    if(this.lookupState=="ready") {
-      this._goFunc();
-    } 
   }
 };
 
 UnsourcedState.prototype.startLookup = function(url) {
   var state = this;
-  var options = restoreOptions();
+  var options = getOptions();
   var search_url = options.search_server + '/api/lookup?url=' + encodeURIComponent(url);
 
   state.url = url;
@@ -119,71 +114,10 @@ TabTracker = {};
 
 
 
-function restoreOptions() {
+function getOptions() {
   return {'search_server':'http://unsourced.org'};
 }
 
-
-
-
-
-
-
-function onRequest(request, sender, response)
-{
-    console.log(request.method, request, sender);
-
-    if (request.method == 'getAllBrowserTabs') {
-        chrome.windows.getAll({populate: true}, function(windows){
-            var tabs = [];
-            jQuery(windows).each(function(winIdx, win){
-                jQuery(win.tabs).each(function(tabIdx, tab) {
-                    tabs.push(tab);
-                });
-            });
-            response(tabs);
-        });
-
-    } else if (request.method == 'showOptionsPage') {
-        chrome.tabs.create({
-            url: chrome.extension.getURL("html/options.html")
-        });
-    } else if (request.method == 'whoami?') {
-        response(sender.tab);
-
-    } else if (request.method == "getOptions") {
-        response(restoreOptions());
-
-    } else if (request.method == "saveOptions") {
-        response(saveOptions(request.options));
-
-    } else if (request.method == "resetOptions") {
-        response(resetOptions());
-
-    } else if (request.method == "addToWhitelist") {
-        var options = restoreOptions();
-        if (options.sites.indexOf(request.site) == -1) {
-            options.sites.push(request.site);
-            saveOptions(options);
-        }
-        response(options);
-
-    } else if (request.method == "removeFromWhitelist") {
-        var options = restoreOptions();
-        var offset = options.sites.indexOf(request.site);
-        if (offset >= 0) {
-            options.sites.splice(offset, 1);
-            saveOptions(options);
-        }
-        response(options);
-
-    } else if (request.method == "log") {
-        console.log(request.args);
-    }
-}
-
-
-chrome.extension.onRequest.addListener(onRequest);
 
 
 function buildMatchPatterns(sites) {
@@ -337,20 +271,14 @@ var executeScriptsSynchronously = function (tab_id, files, callback) {
 };
 
 
-/* TODO: xyzzy - merge into update_gui() */
-function show_results(tabid) {
-  var state = TabTracker[tabid];
-  if( state===undefined ) {
-    console.log("UHOH - show_results() called on tab with no UnsourcedState tabid=", tabid);
+
+// show any warning labels, overlaid on page
+function ShowOverlays(tabid, state) {
+  if(state.overlaysApplied === true) {
     return;
-  }
+  } 
 
   var ad = state.lookupResults;
-
-  // update popup
-  // update widget
-
-  // show any warning labels, overlaid on page
   chrome.tabs.insertCSS(tabid, {file: "/css/unsourced.css"});
   executeScriptsSynchronously(tabid, ["/js/lib/jquery.js", "/js/content.js"],
       function() {
@@ -364,13 +292,17 @@ function show_results(tabid) {
       console.log("Req sent to tab ",tabid, req);
     });
 
+  state.overlaysApplied = true;
+
   console.log("show_results", tabid, ad);
-  return;
 }
 
 
 
-/* update the gui to reflect the current state */
+/* update the gui to reflect the current state
+ * the state tracker object calls this every time something changes
+ * (eg lookup request returns)
+ */
 function update_gui(tabid, state)
 {
   if( state===undefined ) {
@@ -379,6 +311,13 @@ function update_gui(tabid, state)
     return;
   }
 
+  // ready to add overlays to the webpage (eg warning labels)?
+  if(state.lookupState=="ready" && state.contentReady==true) {
+      ShowOverlays(tabid,state);
+  }
+
+
+  // sort out icon and badge
   var tooltip_txt = "";
   var badge_txt = "";
   var badge_colour = "#888888";
@@ -417,9 +356,8 @@ chrome.webNavigation.onCommitted.addListener(function(details) {
   if (details.frameId != 0)
       return;
   console.log("onCommitted tabid=", details.tabId);
-  // we store some extra state about the tab
+  // attach out state tracker to the tab
   var state = new UnsourcedState(
-    function () {show_results(details.tabId);},
     function (state) {update_gui(details.tabId, state);}
   );
   TabTracker[details.tabId] = state;
@@ -438,12 +376,15 @@ chrome.webNavigation.onDOMContentLoaded.addListener(function(details) {
   if (details.frameId != 0)
       return;
 
-  state = TabTracker[details.tabId];
+  var state = TabTracker[details.tabId];
   if( state === undefined )
     return; // we're not covering this page
   // TODO: pageDetails to come from content script please!
   pageDetails = {};
   state.contentReady(pageDetails);
+
+//  var req = { 'method': 'examinePage' };
+//  chrome.tabs.sendRequest(details.tabId, req);
 });
 
 

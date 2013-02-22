@@ -139,10 +139,12 @@ $(document).ready( function() {
 
 
 chrome.extension.onRequest.addListener( function(request, sender, response) {
-   var method = request.method;
-   if (method == 'showWarningLabels') {
-     showWarningLabels(request.labels);
-   }
+  var method = request.method;
+  if (method == 'showWarningLabels') {
+    showWarningLabels(request.labels);
+  } else if (method == 'examinePage') {
+    response(examinePage());
+  }
 
 });
 

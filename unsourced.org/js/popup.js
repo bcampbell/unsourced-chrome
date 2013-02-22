@@ -11,7 +11,7 @@ function display(tmplName,params)
 
 function init_popup()
 {
-  // var submit_url = restoreOptions().search_server + "/addarticle?url=" + encodeURIComponent(tab.url);
+  // var submit_url = getOptions().search_server + "/addarticle?url=" + encodeURIComponent(tab.url);
 
   // we want to pop it up on the currently-active tab
   chrome.tabs.query( {
@@ -24,7 +24,6 @@ function init_popup()
 
     var bg = chrome.extension.getBackgroundPage();
     var state = bg.TabTracker[tab.id];
-
     if( state === undefined ) {
       var dummy_state = {
         "lookupState": "none",
