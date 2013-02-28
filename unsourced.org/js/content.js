@@ -1,3 +1,4 @@
+console.log("start content.js: F.A.B.");
 
 var label_template = '\
 <div class="unsrced-label">\
@@ -36,7 +37,8 @@ function showWarningLabels( labels ) {
   for(var idx=0; idx<labels.length; idx++) {
     var label = labels[idx];
     var html = render(label_template, label);
-    $(html).hide().appendTo(overlay).fadeIn('fast');
+//    $(html).hide().appendTo(overlay).fadeIn('fast');
+    $(html).appendTo(overlay);
   }
 
 
@@ -121,7 +123,11 @@ function examinePage() {
   }
 
   // if og:type is present, but not 'article', then we probably don't it
-  pageDetails.ogType = $('meta[property="og:type"]').attr('content');
+  var ogtype = $('meta[property="og:type"]').attr('content');
+  if(ogtype === undefined) {
+    ogtype = null;
+  }
+  pageDetails.ogType = ogtype;
   return pageDetails;
 }
 
@@ -137,7 +143,7 @@ $(document).ready( function() {
 });
 */
 
-
+/*
 chrome.extension.onRequest.addListener( function(request, sender, response) {
   var method = request.method;
   if (method == 'showWarningLabels') {
@@ -147,7 +153,24 @@ chrome.extension.onRequest.addListener( function(request, sender, response) {
   }
 
 });
+*/
 
+chrome.extension.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log("content.js: received " + request.method);
+    var method = request.method;
+    if (method == 'showWarningLabels') {
+      showWarningLabels(request.labels);
+    } else if (method == 'examinePage') {
+      sendResponse(examinePage());
+    }
+  }
+);
 
-//console.log("content.js: F.A.B.");
+$(document).ready( function() {
+  console.log("content.js: document ready");
+  chrome.extension.sendMessage({'method': 'pageExamined', 'pageDetails': examinePage()});
+});
+
+console.log("content.js: F.A.B.");
 

@@ -12,7 +12,7 @@
 console.log("HELLO WORLD!");
 
 function UnsourcedState(guiUpdateFunc) {
-  this._contentReady = false;
+  this.contentReady = false;
   this._guiUpdateFunc = guiUpdateFunc;
 
   this.overlaysApplied = false; // have overlays been injected into the page?
@@ -20,7 +20,7 @@ function UnsourcedState(guiUpdateFunc) {
   this.lookupState = "none"; // none, pending, ready, error
   this.lookupResults = null;  // only set if state is 'ready'
 
-  // this.pageDetails = undefined // set by contentReady()
+  this.pageDetails = null; // set by domReady()
   //  this.url = undefined; // set by startLookup()
 }
 
@@ -42,11 +42,11 @@ UnsourcedState.prototype.lookupError = function() {
   this._guiUpdateFunc(this);
 }
 
-UnsourcedState.prototype.contentReady = function(pageDetails) {
-  console.log("contentReady");
+UnsourcedState.prototype.domReady = function(pageDetails) {
+  console.log("domReady (pageDetails.ogType="+pageDetails.ogType+", pageDetails.indicatorsFound="+pageDetails.indicatorsFound+")" );
   this.pageDetails = pageDetails;
-  if(this._contentReady!=true) {
-    this._contentReady = true;
+  if(this.contentReady!=true) {
+    this.contentReady = true;
     this._guiUpdateFunc(this);
   }
 };
@@ -272,55 +272,40 @@ var executeScriptsSynchronously = function (tab_id, files, callback) {
 
 
 
-// show any warning labels, overlaid on page
-function ShowOverlays(tabid, state) {
-  if(state.overlaysApplied === true) {
-    return;
-  } 
-
-  var ad = state.lookupResults;
-  chrome.tabs.insertCSS(tabid, {file: "/css/unsourced.css"});
-  executeScriptsSynchronously(tabid, ["/js/lib/jquery.js", "/js/content.js"],
-      function() {
-
-      /* pass the article details in to the content script to present */
-
-      ad.labels = [{'icon_url': chrome.extension.getURL("img/sourced.png"), "prettyname":"Too many fish", "description": "Way too many fish"},];
-
-      var req = { 'method': 'showWarningLabels', 'labels': ad.labels };
-      chrome.tabs.sendRequest(tabid, req);
-      console.log("Req sent to tab ",tabid, req);
-    });
-
-  state.overlaysApplied = true;
-
-  console.log("show_results", tabid, ad);
-}
-
-
-
 /* update the gui to reflect the current state
  * the state tracker object calls this every time something changes
  * (eg lookup request returns)
  */
 function update_gui(tabid, state)
 {
+  console.log("update_gui", state);
   if( state===undefined ) {
     // not tracking this tab
-    chrome.browserAction.setBadgeText(null);
+    chrome.browserAction.setBadgeText({"tabId": tabid, "text": null});
+    chrome.browserAction.setTitle({"tabId": tabid, "title": ""});
+    chrome.browserAction.setIcon({"tabId": tabid, "path": "img/unsourced.org"});
+    // TODO: disable popup (or show another popup)
     return;
   }
 
   // ready to add overlays to the webpage (eg warning labels)?
-  if(state.lookupState=="ready" && state.contentReady==true) {
-      ShowOverlays(tabid,state);
+  if(state.lookupState=="ready" && state.contentReady==true && state.overlaysApplied!==true) {
+    console.log("SHOW WARNING LABELS NOW.");
+    chrome.tabs.sendMessage(
+      tabid,
+      {'method': 'showWarningLabels', 'labels': state.lookupResults.labels}
+    );
+    state.overlaysApplied = true;
   }
 
+  // if there's an popup active, tell it to refresh
+  chrome.extension.sendMessage({'method':'refresh_popup'});
 
   // sort out icon and badge
   var tooltip_txt = "";
   var badge_txt = "";
   var badge_colour = "#888888";
+  var icon_img = "img/unsourced.png";
   switch( state.lookupState ) {
     case "none":
       break;
@@ -333,7 +318,8 @@ function update_gui(tabid, state)
         if( ad.status=='found') {
           badge_txt = "" + ad.sources.length;
           badge_colour = ad.needs_sourcing ? "#cc0000" : "#888888";
-          tooltip_txt = "" + ad.sources.length + " sources, " + ad.labels.length + " warning labels"; 
+          tooltip_txt = "" + ad.sources.length + " sources, " + ad.labels.length + " warning labels";
+          icon_img = "img/sourced.png";
         } else {
           tooltip_txt = "no sources or warning labels";
         } 
@@ -348,8 +334,20 @@ function update_gui(tabid, state)
   chrome.browserAction.setBadgeText({"tabId": tabid, "text": badge_txt});
   chrome.browserAction.setBadgeBackgroundColor({"tabId": tabid, "color":badge_colour});
   chrome.browserAction.setTitle({"tabId": tabid, "title": tooltip_txt});
+  chrome.browserAction.setIcon({"tabId": tabid, "path": icon_img});
+
 }
 
+
+chrome.extension.onMessage.addListener( function(req, sender, sendResponse) {
+  console.log( "background.js: received "+ req.method);
+  if(req.method == "pageExamined") {
+    var state = TabTracker[sender.tab.id];
+    if( state === undefined )
+      return; // we're not covering this page
+    state.domReady(req.pageDetails);
+  }
+});
 
 
 chrome.webNavigation.onCommitted.addListener(function(details) {
@@ -361,6 +359,12 @@ chrome.webNavigation.onCommitted.addListener(function(details) {
     function (state) {update_gui(details.tabId, state);}
   );
   TabTracker[details.tabId] = state;
+
+  // Inject our extra content scripts and css into the page
+  // Could inject via manifest file, but we can support a blacklist here
+//  chrome.tabs.insertCSS(details.tabId, {file: "/css/unsourced.css"});
+  // TODO: kill jQuery. It's overkill here.
+//  executeScriptsSynchronously(details.tabId, ["/js/lib/jquery.js", "/js/content.js"], function() {
 
   if(is_news_article(details.url)) {
     console.log("whitelisted: ", details.url);
@@ -379,12 +383,11 @@ chrome.webNavigation.onDOMContentLoaded.addListener(function(details) {
   var state = TabTracker[details.tabId];
   if( state === undefined )
     return; // we're not covering this page
-  // TODO: pageDetails to come from content script please!
-  pageDetails = {};
-  state.contentReady(pageDetails);
 
-//  var req = { 'method': 'examinePage' };
-//  chrome.tabs.sendRequest(details.tabId, req);
+  // ask the content script to take a look through the page, to see if it
+  // looks like an article or something
+
+//  chrome.tabs.sendMessage(details.tabId, {'method': 'examinePage'}, function(result) { state.domReady(result); } );
 });
 
 

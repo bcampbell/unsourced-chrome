@@ -19,11 +19,12 @@
 
 <!-- template for when we have data about the article -->
 <script id="popup-details-tmpl" type="text/x-jquery-tmpl">
+{% if debug_msg %}
   <pre>
-  lookupState: {{ lookupState }}
-  lookupResults.status: {{ lookupResults.status }}
+  {{debug_msg}}
   </pre>
-
+</pre>
+{% endif %}
 {% if lookupResults %}
 
   {% if lookupResults.sources.length %}
