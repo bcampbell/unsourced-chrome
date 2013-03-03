@@ -167,10 +167,10 @@ chrome.extension.onMessage.addListener(
   }
 );
 
-$(document).ready( function() {
+//$(document).ready( function() {
   console.log("content.js: document ready");
   chrome.extension.sendMessage({'method': 'pageExamined', 'pageDetails': examinePage()});
-});
+//});
 
 console.log("content.js: F.A.B.");
 
