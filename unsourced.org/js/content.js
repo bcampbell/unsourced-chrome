@@ -108,32 +108,53 @@ function examinePage() {
 
   var pageDetails = {};
 
-  // search for text that might indicate an article requires sourcing...
-  var indicators = ["scientists have", "scientists say",  "paper published", "research suggests", "latest research", "researchers", "the study"]
-/* other possibilities:
-  "according to a new study"
-  "the study"
-  "findings"
-*/
+  {
+    // search for text that might indicate an article requires sourcing...
+    var indicators = ["scientists have", "scientists say",  "paper published", "research suggests", "latest research", "researchers", "the study"]
+  /* other possibilities:
+    "according to a new study"
+    "the study"
+    "findings"
+  */
 
   /* TODO: could check for obvious containers, to exclude menus, sidebars and other cruft */
-  var hits = searchHTML(document.body, indicators);
-  if(hits.length>0) {
-    // looks like sourcing is needed...
-    pageDetails.indicatorsFound = true;
-  } else {
-    pageDetails.indicatorsFound = false;
+    var hits = searchHTML(document.body, indicators);
+    if(hits.length>0) {
+      // looks like sourcing is needed...
+      pageDetails.indicatorsFound = true;
+    } else {
+      pageDetails.indicatorsFound = false;
+    }
   }
 
-  // if og:type is present, but not 'article', then we probably don't it
-  var meta_ogtype = document.querySelector('meta[property="og:type"]');
-  var ogtype = meta_ogtype.content;
-  if(ogtype === undefined) {
-    ogtype = null;
+
+  // is an og:type metatag present?
+  {
+    pageDetails.ogType = null;
+    var meta_ogtype = document.querySelector('meta[property="og:type"]');
+    if( meta_ogtype != null ) {
+      if(meta_ogtype.content !== undefined) {
+        pageDetails.ogType = meta_ogtype.content;
+      }
+    }
   }
-  pageDetails.ogType = ogtype;
+
+  // how about a schema.org type?
+  {
+    var container = document.querySelector('[itemscope][itemtype]')
+    if( container != null ) {
+      console.log("FOO", container.getAttribute('itemtype'));
+      pageDetails.schemaType = container.getAttribute('itemtype');
+    } else {
+      console.log("BAR");
+      pageDetails.schemaType = null;
+    }
+  }
+
+
   return pageDetails;
 }
+
 
 
 /* chrome specifics */
