@@ -21,14 +21,18 @@ function render(tmpl, values) {
 
 
 
-
+// get or create the unsourced overlay element
 function unsrced() {
-  var u= $('body #unsrced');
-  if(u.length == 0) {
-    u = $('<div id="unsrced"></div>').appendTo($('body'));
+  var u = document.querySelector('body #unsrced');
+  if(u == null) {
+    u = document.createElement('div');
+    u.id = 'unsrced';
+    document.querySelector('body').appendChild(u);
   }
   return u;
 }
+
+
 
 function showWarningLabels( labels ) {
   console.log("Showing labels",labels);
@@ -36,11 +40,10 @@ function showWarningLabels( labels ) {
   console.log(overlay);
   for(var idx=0; idx<labels.length; idx++) {
     var label = labels[idx];
-    var html = render(label_template, label);
-//    $(html).hide().appendTo(overlay).fadeIn('fast');
-    $(html).appendTo(overlay);
+    var holder = document.createElement('div');
+    holder.innerHTML = render(label_template, label);
+    overlay.appendChild(holder.firstChild);
   }
-
 
 }
 
@@ -123,7 +126,8 @@ function examinePage() {
   }
 
   // if og:type is present, but not 'article', then we probably don't it
-  var ogtype = $('meta[property="og:type"]').attr('content');
+  var meta_ogtype = document.querySelector('meta[property="og:type"]');
+  var ogtype = meta_ogtype.content;
   if(ogtype === undefined) {
     ogtype = null;
   }
@@ -134,43 +138,22 @@ function examinePage() {
 
 /* chrome specifics */
 
-// TODO: examine page upon document ready
-/*
-$(document).ready( function() {
-  var pageDetails = examinePage();
-  // tell main that doc is ready
-  self.port.emit("contentReady", pageDetails);
-});
-*/
-
-/*
-chrome.extension.onRequest.addListener( function(request, sender, response) {
-  var method = request.method;
-  if (method == 'showWarningLabels') {
-    showWarningLabels(request.labels);
-  } else if (method == 'examinePage') {
-    response(examinePage());
-  }
-
-});
-*/
-
 chrome.extension.onMessage.addListener(
   function(request, sender, sendResponse) {
     console.log("content.js: received " + request.method);
     var method = request.method;
     if (method == 'showWarningLabels') {
       showWarningLabels(request.labels);
-    } else if (method == 'examinePage') {
+    }/* else if (method == 'examinePage') {
       sendResponse(examinePage());
-    }
+    }*/
   }
 );
 
-//$(document).ready( function() {
-  console.log("content.js: document ready");
-  chrome.extension.sendMessage({'method': 'pageExamined', 'pageDetails': examinePage()});
-//});
+// this content script file isn't even injected until the document is ready,
+// so we can start work right away.
+console.log("content.js: document ready");
+chrome.extension.sendMessage({'method': 'pageExamined', 'pageDetails': examinePage()});
 
 console.log("content.js: F.A.B.");
 
