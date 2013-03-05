@@ -38,6 +38,10 @@ function init_popup()
     state.debug_msg = debug_msg;
 
     display('popup-details-tmpl', state);
+
+    // TODO: wire up any other javascript here (eg buttons)
+    // (chrome extensions don't support any javascript in the html file,
+    // so it's got to be done here
   });
 }
 
@@ -53,5 +57,7 @@ chrome.extension.onMessage.addListener(
 );
 
 
-init_popup();
+document.addEventListener('DOMContentLoaded', function() {
+  init_popup();
+});
 
