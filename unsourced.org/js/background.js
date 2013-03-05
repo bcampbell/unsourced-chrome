@@ -290,12 +290,13 @@ function update_gui(tabid, state)
 
   // ready to add overlays to the webpage (eg warning labels)?
   if(state.lookupState=="ready" && state.contentReady==true && state.overlaysApplied!==true) {
-    console.log("SHOW WARNING LABELS NOW.");
-    chrome.tabs.sendMessage(
-      tabid,
-      {'method': 'showWarningLabels', 'labels': state.lookupResults.labels}
-    );
-    state.overlaysApplied = true;
+    if( state.lookupResults.labels ) {
+      chrome.tabs.sendMessage(
+        tabid,
+        {'method': 'showWarningLabels', 'labels': state.lookupResults.labels}
+      );
+      state.overlaysApplied = true;
+    }
   }
 
   // if there's an popup active, tell it to refresh
