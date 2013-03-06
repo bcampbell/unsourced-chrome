@@ -11,7 +11,8 @@
 
 console.log("HELLO WORLD!");
 
-function UnsourcedState(guiUpdateFunc) {
+function UnsourcedState(url, guiUpdateFunc) {
+  this.url = url;
   this.contentReady = false;
   this._guiUpdateFunc = guiUpdateFunc;
 
@@ -21,7 +22,6 @@ function UnsourcedState(guiUpdateFunc) {
   this.lookupResults = null;  // only set if state is 'ready'
 
   this.pageDetails = null; // set by domReady()
-  //  this.url = undefined; // set by startLookup()
 }
 
 UnsourcedState.prototype.lookupFinished = function(lookupResults) {
@@ -51,14 +51,13 @@ UnsourcedState.prototype.domReady = function(pageDetails) {
   }
 };
 
-UnsourcedState.prototype.startLookup = function(url) {
+UnsourcedState.prototype.startLookup = function() {
   var state = this;
   var options = getOptions();
-  var search_url = options.search_server + '/api/lookup?url=' + encodeURIComponent(url);
+  var search_url = options.search_server + '/api/lookup?url=' + encodeURIComponent(this.url);
 
-  state.url = url;
 
-  console.log("startLookup("+url+")");
+  console.log("startLookup("+this.url+")");
   this.lookupState = "pending";
   this._guiUpdateFunc(this);
 
@@ -90,19 +89,26 @@ UnsourcedState.prototype.startLookup = function(url) {
 };
 
 
-// returns true if the page is definitely _not_ an article
-UnsourcedState.prototype.isNonArticle = function() {
+// returns true if the page is definitely an article
+UnsourcedState.prototype.isDefinitelyArticle = function() {
   var pd = this.pageDetails;
 
+  // discard stupidly-short paths
   var o = parseUri(this.url);
   if( !o.path.match(/.{5,}/)) {
+    return false;
+  }
+
+  if( pd.ogType=='article') {
     return true;
   }
 
-  if( pd.ogType!==undefined && pd.ogType!='article') {
+  if( pd.schemaType=='http://schema.org/NewsArticle') {
     return true;
   }
 
+  // didn't find anything conclusive. Doesn't mean it's _not_ an article,
+  // just that we're not sure
   return false;
 };
 
@@ -120,9 +126,14 @@ function getOptions() {
 
 
 
-function buildMatchPatterns(sites) {
+// returns a function that can test a url against the list of sites
+// a leading dot indicates any subdomain will do, eg:
+//   .example.com             - matches anything.example.com
+// a trailing ... is a wildcard, eg:
+//   example.com/news/...    - matches example.com/news/moon-made-of-cheese.html
+function buildMatchFn(sites) {
 
-  return sites.map(function(site) {
+  var matchers = sites.map(function(site) {
     var pat = site;
     var wild_host = (pat[0]=='.');
     var wild_path = (pat.slice(-3)=='...');
@@ -144,6 +155,17 @@ function buildMatchPatterns(sites) {
 
     return new RegExp(pat);
   });
+
+
+  return function (url) {
+    for (var idx = 0; idx < matchers.length; idx++) {
+      var re = matchers[idx];
+        if( re.test(url)) {
+              return true;
+        }
+    }
+    return false;
+  };
 }
 
 
@@ -166,91 +188,31 @@ function is_news_article(url) {
     return true;
   return false;
 
-/*
-  if (onWhitelist({'host': loc.host, 'pathname': loc.path})) {
-    return true;
-  } else {
-    return false;
-  }
-*/
 }
 
 var onWhitelist = function (location) {
-    // This function is replaced by compileWhitelist
-    return false;
+  // This function is replaced by compileWhitelist
+  return false;
 };
 
+var onBlacklist = function (location) {
+  // This function is replaced by compileBlacklist
+  return true;
+}
+
+
+// replace onWhitelist with a function that returns true for whitelisted sites
 var compileWhitelist = function () {
-    console.log("Recompiling onWhitelist");
+  console.log("Recompiling onWhitelist");
+  // TODO: merge in user whitelist from options
+  onWhitelist = buildMatchFn(news_sites);
+};
 
-    var host_matcher = function (s) {
-        if (s[0] == '.') {
-            return function (location) {
-                return (location.host.slice(-s.length) == s);
-            };
-        } else {
-            return function (location) {
-                return (location.host == s);
-            };
-        }
-    };
-
-    var path_matcher = function (s) {
-        var wild_prefix = (s.slice(0, 3) == '...');
-        var wild_suffix = (s.slice(-3) == '...');
-        if (wild_prefix && wild_suffix) {
-            return function (location) {
-                return (location.pathname.indexOf(s) >= 0);
-            };
-        } else if (wild_prefix) {
-            var literal_suffix = s.slice(3);
-            return function (location) {
-                return (location.pathname.slice(-literal_suffix.length) == literal_suffix);
-            };
-        } else if (wild_suffix) {
-            var literal_prefix = s.slice(0, -3);
-            return function (location) {
-                return (location.pathname.slice(0, literal_prefix.length) == literal_prefix);
-            };
-        } else {
-            return function (location) {
-                return (location.pathname == s);
-            };
-        }
-    };
-
-    var matchers = sites.map(function(site_pattern){
-        var slash_offset = site_pattern.indexOf('/');
-        if (slash_offset == 0) {
-            return path_matcher(site_pattern);
-        } else if (slash_offset == -1) {
-            return host_matcher(site_pattern);
-        } else {
-            var hostpart = site_pattern.slice(0, slash_offset);
-            var pathpart = site_pattern.slice(slash_offset);
-            return function (location) {
-                return host_matcher(hostpart)(location) && path_matcher(pathpart)(location);
-            };
-        };
-    });
-
-/*    if (options.use_generic_news_pattern == true) {
-        matchers.push(function(loc){
-            return /(news|article)/i.test(loc.host + loc.pathname);
-        });
-    }
-*/
-
-    // Replaces onWhitelist in outer scope.
-    onWhitelist = function (location) {
-        for (var idx = 0; idx < matchers.length; idx++) {
-            var matcher = matchers[idx];
-            if (matcher(location)) {
-                return true;
-            }
-        }
-        return false;
-    };
+// replace onBlacklist with a function that returns true for whitelisted sites
+var compileBlacklist = function () {
+  console.log("Recompiling onBlacklist");
+  // TODO: get blacklist from options
+  onBlacklist = buildMatchFn([]);
 };
 
 
@@ -340,6 +302,32 @@ function update_gui(tabid, state)
 }
 
 
+
+
+// install hook so we know when user starts loading a new page
+// (called after http redirects have been handled)
+chrome.webNavigation.onCommitted.addListener(function(details) {
+  if (details.frameId != 0)
+      return;
+
+  console.log("onCommitted tabid=", details.tabId, "url=",details.url);
+  // attach our state tracker to the tab
+  var state = new UnsourcedState( details.url,
+    function (state) {update_gui(details.tabId, state);}
+  );
+  TabTracker[details.tabId] = state;
+
+
+  // if site is whitelisted, start a lookup immediately
+  if(!onBlacklist(details.url) && onWhitelist(details.url)) {
+    console.log("whitelisted: ", details.url);
+    state.startLookup();
+  } else {
+    console.log("not on whitelist: ", details.url);
+  }
+});
+
+
 chrome.extension.onMessage.addListener( function(req, sender, sendResponse) {
   console.log( "background.js: received "+ req.method);
   if(req.method == "pageExamined") {
@@ -347,48 +335,21 @@ chrome.extension.onMessage.addListener( function(req, sender, sendResponse) {
     if( state === undefined )
       return; // we're not covering this page
     state.domReady(req.pageDetails);
+
+    // was a lookup started earlier?
+    if(state.lookupState=='none') {
+      // no. but we know more now we've peeked at the page contents.
+      // so maybe a lookup is now appropriate...
+      if( state.isDefinitelyArticle() ) {
+        if( !onBlacklist(state.url)) {
+          console.log("not blacklisted.", state.url);
+          state.startLookup();
+        } else {
+          console.log("blacklisted.");
+        }
+      }
+    }
   }
-});
-
-
-chrome.webNavigation.onCommitted.addListener(function(details) {
-  if (details.frameId != 0)
-      return;
-  console.log("onCommitted tabid=", details.tabId);
-  // attach out state tracker to the tab
-  var state = new UnsourcedState(
-    function (state) {update_gui(details.tabId, state);}
-  );
-  TabTracker[details.tabId] = state;
-
-  // Inject our extra content scripts and css into the page
-  // Could inject via manifest file, but we can support a blacklist here
-//  chrome.tabs.insertCSS(details.tabId, {file: "/css/unsourced.css"});
-  // TODO: kill jQuery. It's overkill here.
-//  executeScriptsSynchronously(details.tabId, ["/js/lib/jquery.js", "/js/content.js"], function() {
-
-  if(is_news_article(details.url)) {
-    console.log("whitelisted: ", details.url);
-    state.startLookup(details.url);
-  } else {
-    console.log("not on whitelist: ", details.url);
-  }
-});
-
-
-//chrome.webNavigation.onCompleted.addListener(function(details) {
-chrome.webNavigation.onDOMContentLoaded.addListener(function(details) {
-  if (details.frameId != 0)
-      return;
-
-  var state = TabTracker[details.tabId];
-  if( state === undefined )
-    return; // we're not covering this page
-
-  // ask the content script to take a look through the page, to see if it
-  // looks like an article or something
-
-//  chrome.tabs.sendMessage(details.tabId, {'method': 'examinePage'}, function(result) { state.domReady(result); } );
 });
 
 
@@ -398,6 +359,13 @@ chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
     delete TabTracker[tabId];
   }
 });
+
+
+compileWhitelist();
+compileBlacklist();
+
+
+console.log(onBlacklist("http://www.smh.com.au/opinion/politics/lies-damned-lies-and-labor-claims-20130305-2fivr.html"));
 
 console.log("F.A.B.");
 
