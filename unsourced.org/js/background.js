@@ -53,7 +53,6 @@ UnsourcedState.prototype.domReady = function(pageDetails) {
 
 UnsourcedState.prototype.startLookup = function() {
   var state = this;
-  var options = getOptions();
   var search_url = options.search_server + '/api/lookup?url=' + encodeURIComponent(this.url);
 
 
@@ -119,11 +118,8 @@ UnsourcedState.prototype.isDefinitelyArticle = function() {
 TabTracker = {};
 
 
-
-function getOptions() {
-  return {'search_server':'http://unsourced.org'};
-}
-
+/* extension options - (loaded from storage in startup() and changed via storeOptions() */
+options = [];
 
 
 // returns a function that can test a url against the list of sites
@@ -204,15 +200,14 @@ var onBlacklist = function (location) {
 // replace onWhitelist with a function that returns true for whitelisted sites
 var compileWhitelist = function () {
   console.log("Recompiling onWhitelist");
-  // TODO: merge in user whitelist from options
-  onWhitelist = buildMatchFn(news_sites);
+  var sites = news_sites.concat(options.user_whitelist);
+  onWhitelist = buildMatchFn(sites);
 };
 
 // replace onBlacklist with a function that returns true for whitelisted sites
 var compileBlacklist = function () {
   console.log("Recompiling onBlacklist");
-  // TODO: get blacklist from options
-  onBlacklist = buildMatchFn([]);
+  onBlacklist = buildMatchFn(options.user_blacklist);
 };
 
 
@@ -302,70 +297,109 @@ function update_gui(tabid, state)
 }
 
 
+// set up the hooks we want to listen upon
+function init_listeners() {
+
+  // install hook so we know when user starts loading a new page
+  // (called after http redirects have been handled)
+  chrome.webNavigation.onCommitted.addListener(function(details) {
+    if (details.frameId != 0)
+        return;
+
+    console.log("onCommitted tabid=", details.tabId, "url=",details.url);
+    // attach our state tracker to the tab
+    var state = new UnsourcedState( details.url,
+      function (state) {update_gui(details.tabId, state);}
+    );
+    TabTracker[details.tabId] = state;
 
 
-// install hook so we know when user starts loading a new page
-// (called after http redirects have been handled)
-chrome.webNavigation.onCommitted.addListener(function(details) {
-  if (details.frameId != 0)
-      return;
-
-  console.log("onCommitted tabid=", details.tabId, "url=",details.url);
-  // attach our state tracker to the tab
-  var state = new UnsourcedState( details.url,
-    function (state) {update_gui(details.tabId, state);}
-  );
-  TabTracker[details.tabId] = state;
+    // if site is whitelisted, start a lookup immediately
+    if(!onBlacklist(details.url) && onWhitelist(details.url)) {
+      console.log("whitelisted: ", details.url);
+      state.startLookup();
+    } else {
+      console.log("not on whitelist: ", details.url);
+    }
+  });
 
 
-  // if site is whitelisted, start a lookup immediately
-  if(!onBlacklist(details.url) && onWhitelist(details.url)) {
-    console.log("whitelisted: ", details.url);
-    state.startLookup();
-  } else {
-    console.log("not on whitelist: ", details.url);
-  }
-});
+  chrome.extension.onMessage.addListener( function(req, sender, sendResponse) {
+    console.log( "background.js: received "+ req.method);
+    if(req.method == "pageExamined") {
+      var state = TabTracker[sender.tab.id];
+      if( state === undefined )
+        return; // we're not covering this page
+      state.domReady(req.pageDetails);
 
-
-chrome.extension.onMessage.addListener( function(req, sender, sendResponse) {
-  console.log( "background.js: received "+ req.method);
-  if(req.method == "pageExamined") {
-    var state = TabTracker[sender.tab.id];
-    if( state === undefined )
-      return; // we're not covering this page
-    state.domReady(req.pageDetails);
-
-    // was a lookup started earlier?
-    if(state.lookupState=='none') {
-      // no. but we know more now we've peeked at the page contents.
-      // so maybe a lookup is now appropriate...
-      if( state.isDefinitelyArticle() ) {
-        if( !onBlacklist(state.url)) {
-          console.log("not blacklisted.", state.url);
-          state.startLookup();
-        } else {
-          console.log("blacklisted.");
+      // was a lookup started earlier?
+      if(state.lookupState=='none') {
+        // no. but we know more now we've peeked at the page contents.
+        // so maybe a lookup is now appropriate...
+        if( state.isDefinitelyArticle() ) {
+          if( !onBlacklist(state.url)) {
+            console.log("not blacklisted.", state.url);
+            state.startLookup();
+          } else {
+            console.log("blacklisted.");
+          }
         }
       }
     }
+  });
+
+
+
+  chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+    if( TabTracker[tabId] !== undefined ) {
+      delete TabTracker[tabId];
+    }
+  });
+
+}
+
+
+//
+function storeOptions(new_options) {
+  for (key in new_options) {
+    options[key] = new_options[key];
   }
-});
+  console.log("save options: ", options);
+  chrome.storage.sync.set(options);
 
-
-
-chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-  if( TabTracker[tabId] !== undefined ) {
-    delete TabTracker[tabId];
+  // perform any processing the changes require
+  if( 'user_whitelist' in new_options ) {
+    compileWhitelist();
   }
-});
+  if( 'user_blacklist' in new_options ) {
+    compileBlacklist();
+  }
+
+}
 
 
-compileWhitelist();
-compileBlacklist();
+function startup() {
+  var default_options = {
+    'search_server':'http://unsourced.org',
+    'user_whitelist': [],
+    'user_blacklist': []
+  };
+
+  chrome.storage.sync.get(default_options, function(items) {
+    options = items;
+
+    console.log("options upon startup: ", options);
+
+    // continue startup
+    compileWhitelist();
+    compileBlacklist();
+    init_listeners();
+    console.log("F.A.B.");
+
+  });
+}
+  
+startup();
 
 
-console.log(onBlacklist("http://www.smh.com.au/opinion/politics/lies-damned-lies-and-labor-claims-20130305-2fivr.html"));
-
-console.log("F.A.B.");
 

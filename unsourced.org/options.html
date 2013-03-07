@@ -7,11 +7,26 @@
     <h1>Unsourced options</h1>
 
 
+    <form>
+<!--
     <input type="checkbox" id="more-magic" name="more-magic" />
     <label for="more-magic">More magic?</label>
+    <br/>
+-->
 
-    <input type="button" id="save" name="save" value="Save" />
+    <br/>
+    <label for="user-whitelist">Whitelist</label>
+    <textarea id="user-whitelist" spellcheck="false" style="white-space: nowrap; overflow: auto;">
+    </textarea>
+    <br/>
+    <label for="user-blacklist">Blacklist</label>
+    <textarea id="user-blacklist" spellcheck="false" style="white-space: nowrap; overflow: auto;">
+    </textarea>
 
+    <br/>
+    <input type="submit" id="save" name="save" value="Save" />
+    <input type="reset" id="revert" name="revert" value="Revert" />
+    </form>
   </body>
     <script src="js/lib/jquery.js"></script>
     <script src="js/options.js"></script>
