@@ -106,6 +106,10 @@ UnsourcedState.prototype.isDefinitelyArticle = function() {
     return true;
   }
 
+  if( pd.hnews==true) {
+    return true;
+  }
+
   // didn't find anything conclusive. Doesn't mean it's _not_ an article,
   // just that we're not sure
   return false;

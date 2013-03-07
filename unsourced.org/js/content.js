@@ -143,14 +143,21 @@ function examinePage() {
   {
     var container = document.querySelector('[itemscope][itemtype]')
     if( container != null ) {
-      console.log("FOO", container.getAttribute('itemtype'));
       pageDetails.schemaType = container.getAttribute('itemtype');
     } else {
-      console.log("BAR");
       pageDetails.schemaType = null;
     }
   }
 
+  // hNews?
+  {
+    hnews = document.querySelector('.hnews')
+    if( hnews != null ) {
+      pageDetails.hnews = true;
+    } else {
+      pageDetails.hnews = false;
+    }
+  }
 
   return pageDetails;
 }
