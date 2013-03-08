@@ -11,12 +11,13 @@
       }
     </style>
     <script src="/js/lib/ashe.js"></script>
+    <script src="/js/lib/parseuri.js"></script>
     <script src="/js/popup.js"></script>
 </head>
   <body>
 
 
-<!-- template for when we have data about the article -->
+<!-- template to display popup -->
 <script id="popup-details-tmpl" type="text/x-jquery-tmpl">
 {% if debug_msg %}
   <pre>
@@ -33,12 +34,7 @@
     {% for src in lookupResults.sources %}
       <li class="src src-{{src.kind}}">
         <div class="src-info">
-        {% if src.title %}
-        <a target="_blank" href="{{src.url}}">{{src.title}}</a>
-        {% else %}
-        <a target="_blank" href="{{src.url}}">{{src.url}}</a>
-        {% endif %}
-
+        <span class="src-link">{{src|sourcelink}}</span>
         {% if src.publication %}
           {% if src.pubdate %}
             <span class="publication">{{src.publication}}</span>, {{src.pubdate}}
@@ -76,6 +72,12 @@
 
     <br/>
     <br/>
+
+
+    {% if lookupResults.unsourced_url %}
+    <a target="_blank" href="{{lookupResults.unsourced_url}}">See this article's page on unsourced.org</a>
+    {% endif %}
+
 <!--
     <small><a target="_blank" href="{{unsourced_url}}">More information about this article</a> (at unsourced.org)</small>
 -->

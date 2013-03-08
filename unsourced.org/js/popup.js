@@ -1,3 +1,20 @@
+
+
+Ashe.addModifiers({
+    sourcelink: function(src) {
+      if(src.title) { 
+        return '<a target="_blank" href="' + src.url + '">' + src.title + '</a>';
+      } else {
+        var loc = parseUri(src.url);
+        var title = {'pr':"Press release", 'paper': "Paper", 'other':"Other link"}[src.kind] || 'Source';
+        return '<a target="_blank" href="' + src.url + '">' + title + '</a> (' + loc.host + ')';
+      }
+    }
+    // , oneMoreModifier: function(str) { ... }
+});
+
+
+
 function display(tmplName,params)
 {
     var template = document.getElementById(tmplName).innerHTML;
