@@ -88,32 +88,6 @@ UnsourcedState.prototype.startLookup = function() {
 };
 
 
-// returns true if the page is definitely an article
-UnsourcedState.prototype.isDefinitelyArticle = function() {
-  var pd = this.pageDetails;
-
-  // discard stupidly-short paths
-  var o = parseUri(this.url);
-  if( !o.path.match(/.{5,}/)) {
-    return false;
-  }
-
-  if( pd.ogType=='article') {
-    return true;
-  }
-
-  if( pd.schemaType=='http://schema.org/NewsArticle') {
-    return true;
-  }
-
-  if( pd.hnews==true) {
-    return true;
-  }
-
-  // didn't find anything conclusive. Doesn't mean it's _not_ an article,
-  // just that we're not sure
-  return false;
-};
 
 
 /* end UnsourcedState */
@@ -340,7 +314,7 @@ function init_listeners() {
       if(state.lookupState=='none') {
         // no. but we know more now we've peeked at the page contents.
         // so maybe a lookup is now appropriate...
-        if( state.isDefinitelyArticle() ) {
+        if( state.pageDetails.isDefinitelyArticle == true ) {
           if( !onBlacklist(state.url)) {
             console.log("not blacklisted.", state.url);
             state.startLookup();

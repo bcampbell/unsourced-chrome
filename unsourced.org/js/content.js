@@ -106,7 +106,7 @@ function searchHTML(node,strings) {
 // check the content of the page for various stuff
 function examinePage() {
 
-  var pageDetails = {};
+  var pd = {};
 
   {
     // search for text that might indicate an article requires sourcing...
@@ -121,20 +121,20 @@ function examinePage() {
     var hits = searchHTML(document.body, indicators);
     if(hits.length>0) {
       // looks like sourcing is needed...
-      pageDetails.indicatorsFound = true;
+      pd.indicatorsFound = true;
     } else {
-      pageDetails.indicatorsFound = false;
+      pd.indicatorsFound = false;
     }
   }
 
 
   // is an og:type metatag present?
   {
-    pageDetails.ogType = null;
+    pd.ogType = null;
     var meta_ogtype = document.querySelector('meta[property="og:type"]');
     if( meta_ogtype != null ) {
       if(meta_ogtype.content !== undefined) {
-        pageDetails.ogType = meta_ogtype.content;
+        pd.ogType = meta_ogtype.content;
       }
     }
   }
@@ -143,9 +143,9 @@ function examinePage() {
   {
     var container = document.querySelector('[itemscope][itemtype]')
     if( container != null ) {
-      pageDetails.schemaType = container.getAttribute('itemtype');
+      pd.schemaType = container.getAttribute('itemtype');
     } else {
-      pageDetails.schemaType = null;
+      pd.schemaType = null;
     }
   }
 
@@ -153,13 +153,52 @@ function examinePage() {
   {
     hnews = document.querySelector('.hnews')
     if( hnews != null ) {
-      pageDetails.hnews = true;
+      pd.hnews = true;
     } else {
-      pageDetails.hnews = false;
+      pd.hnews = false;
     }
   }
 
-  return pageDetails;
+
+  var schemaorg_art_types = [
+    "http://schema.org/Article",
+    "http://schema.org/NewsArticle",
+    "http://schema.org/BlogPosting",
+    "http://schema.org/ScholarlyArticle",
+    "http://schema.org/MedicalScholarlyArticle" ];
+
+  /* now make a call - are we confident it is or isn't an article? */
+  pd.isDefinitelyArticle = false;
+  pd.isDefinitelyNotArticle = false;
+
+  if(pd.schemaType !== null ) {
+    if(schemaorg_art_types.indexOf(pd.schemaType) > -1 ) {
+      pd.isDefinitelyArticle = true;
+    } else {
+      pd.isDefinitelyNotArticle = true;
+    }
+  }
+
+  if( pd.ogType !== null ) {
+    if( pd.ogType=='article') {
+      pd.isDefinitelyArticle = true;
+    } else {
+      pd.isDefinitelyNotArticle = true;
+    }
+  }
+
+  if( pd.hnews==true ) {
+    pd.isDefinitelyArticle = true;
+  }
+
+  // could have conflicting info...
+  if( pd.isDefinitelyArticle && pd.isDefinitelyNotArticle ) {
+    // ignore all!
+    pd.isDefinitelyArticle = false;
+    pd.isDefinitelyNotArticle = false;
+  }
+
+  return pd;
 }
 
 
