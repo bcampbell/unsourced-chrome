@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var blacklist_str = opts.user_blacklist.join("\n");
     blacklist.defaultValue = blacklist_str; // so revert button will work
     $(blacklist).val(blacklist_str);
+
+    $('#debug').prop('checked', opts.debug);
   }
 
   function fetch() {
@@ -26,7 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
     opts.user_whitelist = opts.user_whitelist.filter(function(a) {return a.trim()!="";});
     opts.user_blacklist = opts.user_blacklist.filter(function(a) {return a.trim()!="";});
 
-  //  console.log("more-magic=", $('#more-magic').is(':checked') );
+
+    opts.debug = $('#debug').prop('checked');
+//is(':checked');
     return opts;
   }
 
