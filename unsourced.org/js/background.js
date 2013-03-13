@@ -9,7 +9,6 @@
  */
 
 
-console.log("HELLO WORLD!");
 
 function UnsourcedState(url, guiUpdateFunc) {
   this.url = url;
@@ -43,7 +42,7 @@ UnsourcedState.prototype.lookupError = function() {
 }
 
 UnsourcedState.prototype.domReady = function(pageDetails) {
-  console.log("domReady (pageDetails.ogType="+pageDetails.ogType+", pageDetails.indicatorsFound="+pageDetails.indicatorsFound+")" );
+//  console.log("domReady (pageDetails.ogType="+pageDetails.ogType+", pageDetails.indicatorsFound="+pageDetails.indicatorsFound+")" );
   this.pageDetails = pageDetails;
   if(this.contentReady!=true) {
     this.contentReady = true;
@@ -181,14 +180,14 @@ var onBlacklist = function (location) {
 
 // replace onWhitelist with a function that returns true for whitelisted sites
 var compileWhitelist = function () {
-  console.log("Recompiling onWhitelist");
+//  console.log("Recompiling onWhitelist");
   var sites = news_sites.concat(options.user_whitelist);
   onWhitelist = buildMatchFn(sites);
 };
 
 // replace onBlacklist with a function that returns true for whitelisted sites
 var compileBlacklist = function () {
-  console.log("Recompiling onBlacklist");
+//  console.log("Recompiling onBlacklist");
   onBlacklist = buildMatchFn(options.user_blacklist);
 };
 
@@ -217,7 +216,7 @@ var executeScriptsSynchronously = function (tab_id, files, callback) {
  */
 function update_gui(tabid, state)
 {
-  console.log("update_gui", state);
+  console.log(tabid + ": update_gui", state);
   if( state===undefined ) {
     console.log("Background: TRYING TO UPDATE ON NON-TRACKED PAGE");
     // not tracking this tab
@@ -302,7 +301,7 @@ function init_listeners() {
 
     // if site is whitelisted (and not blacklisted), start a lookup immediately
     if(!onBlacklist(details.url) && onWhitelist(details.url)) {
-      console.log(details.tabId, ": new page, permitted: ", details.url);
+      console.log(details.tabId +": new page, permitted: ", details.url);
       state.startLookup();
     } else {
       console.log(details.tabId, ": new page, blocked: ", details.url);
@@ -311,11 +310,11 @@ function init_listeners() {
 
 
   chrome.extension.onMessage.addListener( function(req, sender, sendResponse) {
-    console.log( "background.js: received "+ req.method);
+    var state = TabTracker[sender.tab.id];
+    if( state === undefined )
+      return; // we're not covering this page
+    console.log( "background.js: received "+ req.method + " from tab "+sender.tab.id);
     if(req.method == "pageExamined") {
-      var state = TabTracker[sender.tab.id];
-      if( state === undefined )
-        return; // we're not covering this page
       state.domReady(req.pageDetails);
 
       // was a lookup started earlier?
