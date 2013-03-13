@@ -88,7 +88,11 @@ UnsourcedState.prototype.startLookup = function() {
 };
 
 
-
+// return URL for submitting this article to unsourced
+UnsourcedState.prototype.getSubmitURL = function() {
+  var submit_url = options.search_server + '/addarticle?url=' + encodeURIComponent(this.url);
+  return submit_url;
+};
 
 /* end UnsourcedState */
 
@@ -215,6 +219,7 @@ function update_gui(tabid, state)
 {
   console.log("update_gui", state);
   if( state===undefined ) {
+    console.log("Background: TRYING TO UPDATE ON NON-TRACKED PAGE");
     // not tracking this tab
     chrome.browserAction.setBadgeText({"tabId": tabid, "text": null});
     chrome.browserAction.setTitle({"tabId": tabid, "title": ""});
@@ -281,10 +286,13 @@ function init_listeners() {
   // install hook so we know when user starts loading a new page
   // (called after http redirects have been handled)
   chrome.webNavigation.onCommitted.addListener(function(details) {
-    if (details.frameId != 0)
-        return;
+    if(details.frameId != 0)
+      return;
+    // ignore generated transitions (eg due to chrome instant)
+    if(details.transitionType == 'generated')
+      return;
 
-    console.log("onCommitted tabid=", details.tabId, "url=",details.url);
+//    console.log("onCommitted tabid=", details.tabId, "url=",details.url, "transitionType=", details.transitionType);
     // attach our state tracker to the tab
     var state = new UnsourcedState( details.url,
       function (state) {update_gui(details.tabId, state);}
@@ -292,12 +300,12 @@ function init_listeners() {
     TabTracker[details.tabId] = state;
 
 
-    // if site is whitelisted, start a lookup immediately
+    // if site is whitelisted (and not blacklisted), start a lookup immediately
     if(!onBlacklist(details.url) && onWhitelist(details.url)) {
-      console.log("whitelisted: ", details.url);
+      console.log(details.tabId, ": new page, permitted: ", details.url);
       state.startLookup();
     } else {
-      console.log("not on whitelist: ", details.url);
+      console.log(details.tabId, ": new page, blocked: ", details.url);
     }
   });
 
@@ -359,6 +367,7 @@ function storeOptions(new_options) {
 function startup() {
   var default_options = {
     'search_server':'http://unsourced.org',
+    'debug': false,
     'user_whitelist': [],
     'user_blacklist': []
   };
