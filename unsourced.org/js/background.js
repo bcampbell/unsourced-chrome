@@ -107,6 +107,17 @@ UnsourcedState.prototype.getDebugTxt = function() { return JSON.stringify(this,n
 
 UnsourcedState.prototype.wasArticleFound = function() { return this.lookupState == 'ready' && this.lookupResults.status=='found'; };
 
+UnsourcedState.prototype.isSourcingRequired = function() {
+  if( this.wasArticleFound() ) {
+    return this.lookupResults.needs_sourcing;
+  }
+  
+  if( this.pageDetails && !this.pageDetails.isDefinitelyNotArticle && this.pageDetails.indicatorsFound ) {
+    return true;
+  }
+  return false;
+};
+
 
 /* end UnsourcedState */
 
@@ -272,7 +283,7 @@ function update_gui(tabid, state)
         var ad = state.lookupResults;
         if( ad.status=='found') {
           badge_txt = "" + ad.sources.length;
-          badge_colour = ad.needs_sourcing ? "#cc0000" : "#888888";
+//          badge_colour = ad.needs_sourcing ? "#cc0000" : "#888888";
           tooltip_txt = "" + ad.sources.length + " sources, " + ad.labels.length + " warning labels";
           icon_img = "img/sourced.png";
         } else {
@@ -285,6 +296,12 @@ function update_gui(tabid, state)
       badge_colour = "#ff0000";
       break;
   }
+
+  if(state.isSourcingRequired()) {
+    icon_img = "img/missingsources.png";
+    tooltip_txt = "Sources missing";
+  }
+
 
   chrome.browserAction.setBadgeText({"tabId": tabid, "text": badge_txt});
   chrome.browserAction.setBadgeBackgroundColor({"tabId": tabid, "color":badge_colour});
