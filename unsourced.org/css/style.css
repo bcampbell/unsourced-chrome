@@ -6,7 +6,7 @@
 body {
     font-family: Helvetica, Arial, Sans-Serif;
     margin: 0;
-    padding: 1em;
+    padding: 0em;
     font-size: smaller;
     color: #595959;
 }
@@ -173,7 +173,6 @@ a.btn:visited {
 
 
 
-
 /****
  * warning label 
  */
@@ -202,4 +201,18 @@ a.btn:visited {
   font-weight: bold;
 }
 
+/**** MISC stuff - needs tidying ****/
+
+
+header {
+    background-color: #ccc;
+}
+header h3 {
+    margin: 0;
+    padding: 0.2em 0.5em;
+}
+
+#content {
+    padding: 0.5em;
+}
 
