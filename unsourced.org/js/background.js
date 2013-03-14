@@ -21,6 +21,8 @@ function UnsourcedState(url, guiUpdateFunc) {
   this.lookupResults = null;  // only set if state is 'ready'
 
   this.pageDetails = null; // set by domReady()
+  // might already be a popup active!
+  this._guiUpdateFunc(this);
 }
 
 UnsourcedState.prototype.lookupFinished = function(lookupResults) {
@@ -92,6 +94,19 @@ UnsourcedState.prototype.getSubmitURL = function() {
   var submit_url = options.search_server + '/addarticle?url=' + encodeURIComponent(this.url);
   return submit_url;
 };
+
+
+// some helpers for use in popup.html template (ashe can only do boolean if statements)
+UnsourcedState.prototype.isLookupNone = function() { return this.lookupState == 'none'; };
+UnsourcedState.prototype.isLookupReady = function() { return this.lookupState == 'ready'; };
+UnsourcedState.prototype.isLookupPending = function() { return this.lookupState == 'pending'; };
+UnsourcedState.prototype.isLookupError = function() { return this.lookupState == 'error'; };
+
+UnsourcedState.prototype.isDebugSet = function() { return options.debug; };
+UnsourcedState.prototype.getDebugTxt = function() { return JSON.stringify(this,null," "); };
+
+UnsourcedState.prototype.wasArticleFound = function() { return this.lookupState == 'ready' && this.lookupResults.status=='found'; };
+
 
 /* end UnsourcedState */
 

@@ -17,18 +17,36 @@
   <body>
 
 
-<!-- template to display popup -->
+
+<!-- template to placeholder content, on pages we're not active on -->
+<script id="popup-inactive-tmpl" type="text/x-jquery-tmpl">
+<p>
+This is the unsourced.org extension.
+</p>
+<p>
+When viewing news articles, information about their sources will appear here.
+</p>
+</script>
+
+
+
+<!-- template to display details about a page we're tracking -->
 <script id="popup-details-tmpl" type="text/x-jquery-tmpl">
-{% if debug_msg %}
+{% if isDebugSet %}
   <pre>
-  {{debug_msg}}
+  {{getDebugTxt}}
   </pre>
 </pre>
 {% endif %}
 
-{% if lookupResults %}
 
-  {% if lookupResults.sources.length %}
+
+
+
+
+<!-- show results -->
+{% if wasArticleFound %}
+
     <h3>Sources</h3>
     <ul class="srclist">
     {% for src in lookupResults.sources %}
@@ -49,13 +67,10 @@
       </li>
     {% endfor %}
     </ul>
-  {% else %}
-    <h3>No Sources</h3>
-  {% endif %}
 
   {% if lookupResults.needs_sourcing %}
     <em>This article is still missing some sources.</em>
-    <a target="_blank" class="btn" href="{{unsourced_url}}">Source it</a>
+    <a target="_blank" class="btn" href="{{lookupResults.unsourced_url}}">Source it</a>
   {% endif %}
 
   {% if lookupResults.labels.length %}
@@ -67,26 +82,74 @@
     {% endfor %}
   {% else %}
     <h3>No Warning Labels</h3>
-    <div><a target="_blank" class="btn" href="{{unsourced_url}}">Add one</a></div>
+    <div><a target="_blank" class="btn" href="{{lookupResults.unsourced_url}}">Add one</a></div>
   {% endif %}
 
     <br/>
     <br/>
 
 
-    {% if lookupResults.unsourced_url %}
-    <a target="_blank" href="{{lookupResults.unsourced_url}}">See this article's page on unsourced.org</a>
-    {% endif %}
+  {% if lookupResults.unsourced_url %}
+  <a target="_blank" href="{{lookupResults.unsourced_url}}">See this article's page on unsourced.org</a>
+  {% endif %}
 
-<!--
-    <small><a target="_blank" href="{{unsourced_url}}">More information about this article</a> (at unsourced.org)</small>
--->
+
+{% else %}
+
+  <!-- article not found on unsourced (yet) - show what we know so far -->
+
+  {% if isLookupPending %}
+   <p><img src="/img/busy.gif" />Please wait - checking with unsourced.org... </p>
+  {% endif %}
+  {% if isLookupError %}
+    <p class="notice">
+      Sorry - there was a problem checking this page on unsourced.org...<br/>
+      <a class="start-manual-lookup" href="#">try again</a>
+    </p>
+  {% endif %}
+
+  {% if contentReady %}
+    {% if isLookupNone %}
+      <!-- no lookup was attempted. give the option to manually start lookup -->
+      No information about this page.<br/>
+      <a class="start-manual-lookup" href="#">Look it up on unsourced.org</a>
+    {% endif %}
+  {% else %}
+    <p><img src="/img/busy.gif" />Waiting for page to load... </p>
+  {% endif %}
+
+  {% if isLookupReady %}
+    <!-- lookup worked, but article wasn't found on unsourced -->
+    <p>No information on file about this page</p>
+    {% if pageDetails %}
+      {% if pageDetails.isDefinitelyNotArticle %}
+      {% else %}
+        <!-- page could be an article... -->
+        {% if pageDetails.indicatorsFound %}
+          <p class="notice">This page looks like it might be missing some sources<br/>
+          (it contains phrases like "scientists say..." "a report out today" etc...)
+          <a class="btn" target="_blank" href="{{getSubmitURL}}">Submit to unsourced.org</a>
+          </p>
+        {% else %}
+          <a class="btn" target="_blank" href="{{getSubmitURL}}">Submit to unsourced.org</a>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+
 {% endif %}
 </script>
 
 
+  <header> 
+    <h3>Unsourced extension</h3>
+     (what is this?}
+  </header>
   <div id="content">
   </div>
+  <footer>
+  </footer>
   </body>
 </html>
 

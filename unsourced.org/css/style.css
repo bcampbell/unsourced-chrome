@@ -126,6 +126,16 @@ a.btn:visited {
     font-size: 125%;
 }
 
+
+/****/
+.notice {
+    border: 1px dashed red;
+    padding: 1em;
+    font-style: bold;
+    color: red;
+}
+
+
 /*****
  * a wrapper around a button (eg a form, to allow POSTs)
  */
