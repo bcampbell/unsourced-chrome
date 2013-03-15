@@ -180,9 +180,11 @@ function examinePage() {
   }
 
   if( pd.ogType !== null ) {
-    if( pd.ogType=='article') {
+    if( pd.ogType=='article' || pd.ogType=='tumblr-feed:entry') {
       pd.isDefinitelyArticle = true;
-    } else {
+    }
+
+    if( pd.ogType=='website') {
       pd.isDefinitelyNotArticle = true;
     }
   }
