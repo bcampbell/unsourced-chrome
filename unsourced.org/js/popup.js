@@ -46,16 +46,15 @@ function init_popup()
     var state = bg.TabTracker[tab.id];
     if( state === undefined ) {
       display('popup-inactive-tmpl', {});
-    }
-
-    display('popup-details-tmpl', state);
-
-    // wire up any other javascript here (eg buttons)
-    // (chrome extensions don't support any javascript in the html file,
-    // so it's got to be done here
-    var lookupButtons = document.querySelectorAll('.start-manual-lookup');
-    for (var i = 0; i < lookupButtons.length; ++i) {
-      lookupButtons[i].onclick = function() { state.startLookup(); return false; }
+    } else {
+      display('popup-details-tmpl', state);
+      // wire up any other javascript here (eg buttons)
+      // (chrome extensions don't support any javascript in the html file,
+      // so it's got to be done here
+      var lookupButtons = document.querySelectorAll('.start-manual-lookup');
+      for (var i = 0; i < lookupButtons.length; ++i) {
+        lookupButtons[i].onclick = function() { state.startLookup(); return false; }
+      }
     }
   });
 }

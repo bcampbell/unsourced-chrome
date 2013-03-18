@@ -26,6 +26,7 @@ This is the unsourced.org extension.
 <p>
 When viewing news articles, information about their sources will appear here.
 </p>
+
 </script>
 
 
@@ -69,7 +70,7 @@ When viewing news articles, information about their sources will appear here.
     </ul>
 
   {% if lookupResults.needs_sourcing %}
-    <em>This article is still missing some sources.</em>
+    <p class="notice notice-uhoh">This article is still missing some sources.</p>
     <a target="_blank" class="btn" href="{{lookupResults.unsourced_url}}">Source it</a>
   {% endif %}
 
@@ -99,7 +100,7 @@ When viewing news articles, information about their sources will appear here.
   <!-- article not found on unsourced (yet) - show what we know so far -->
 
   {% if isLookupPending %}
-   <p><img src="/img/busy.gif" />Please wait - checking with unsourced.org... </p>
+   <p><img src="/img/busy.gif" /> Please wait - checking with unsourced.org... </p>
   {% endif %}
   {% if isLookupError %}
     <p class="notice">
@@ -111,28 +112,29 @@ When viewing news articles, information about their sources will appear here.
   {% if contentReady %}
     {% if isLookupNone %}
       <!-- no lookup was attempted. give the option to manually start lookup -->
-      No information about this page.<br/>
-      <a class="start-manual-lookup" href="#">Look it up on unsourced.org</a>
+      <p>Is this page a news article? Is it missing sources or warning labels?</p>
+      <a class="btn start-manual-lookup" href="#">Look it up on unsourced.org</a>
     {% endif %}
   {% else %}
-    <p><img src="/img/busy.gif" />Waiting for page to load... </p>
+    <p><img src="/img/busy.gif" /> Waiting for page to load... </p>
   {% endif %}
 
   {% if isLookupReady %}
     <!-- lookup worked, but article wasn't found on unsourced -->
-    <p>No information on file about this page</p>
+    <p class="notice">Unsourced.org has no information about this page.</p>
     {% if pageDetails %}
       {% if pageDetails.isDefinitelyNotArticle %}
       {% else %}
         <!-- page could be an article... -->
         {% if pageDetails.indicatorsFound %}
-          <p class="notice">This page looks like it might be missing some sources<br/>
-          (it contains phrases like "scientists say..." "a report out today" etc...)
-          <a class="btn" target="_blank" href="{{getSubmitURL}}">Submit to unsourced.org</a>
+          <p class="notice notice-uhoh">This page looks like it might be missing some sources<br/>
+          (it contains phrases like "scientists say..." "a report out today" etc...)<br/>
           </p>
         {% else %}
-          <a class="btn" target="_blank" href="{{getSubmitURL}}">Submit to unsourced.org</a>
+          <p>Think this page might be missing some sources?</p>
         {% endif %}
+        <a class="btn" target="_blank" href="{{getSubmitURL}}">Flag it for sourcing</a><br/>
+        <p class="explain">(this will submit it to unsourced.org, where everyone can help track down the missing sources)</p>
       {% endif %}
     {% endif %}
   {% endif %}
@@ -142,9 +144,10 @@ When viewing news articles, information about their sources will appear here.
 </script>
 
 
-  <header> 
-    <h3>Unsourced extension</h3>
+<!--  <header> 
+    <h3><img src="/img/logo.png" alt="Unsourced logo" /></h3>
   </header>
+-->
   <div id="content">
   </div>
   <footer>

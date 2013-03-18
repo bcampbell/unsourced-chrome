@@ -129,12 +129,13 @@ a.btn:visited {
 
 /****/
 .notice {
-    border: 1px dashed red;
-    padding: 1em;
-    font-style: bold;
-    color: red;
+    font-weight: bold;
 }
 
+.notice-uhoh {
+    font-style: italic;
+    color: #c00;
+}
 
 /*****
  * a wrapper around a button (eg a form, to allow POSTs)
@@ -201,12 +202,18 @@ a.btn:visited {
   font-weight: bold;
 }
 
+.explain {
+    font-size: 80%;
+    font-style: italic;
+    color: #888;
+}
+
 /**** MISC stuff - needs tidying ****/
 
 
 header {
-    background-color: #ccc;
 }
+
 header h3 {
     margin: 0;
     padding: 0.2em 0.5em;
