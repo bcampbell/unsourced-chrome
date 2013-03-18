@@ -214,7 +214,9 @@ var compileWhitelist = function () {
 // replace onBlacklist with a function that returns true for whitelisted sites
 var compileBlacklist = function () {
 //  console.log("Recompiling onBlacklist");
-  onBlacklist = buildMatchFn(options.user_blacklist);
+  var built_in_blacklist = ["unsourced.org"];
+  var sites = built_in_blacklist.concat(options.user_blacklist);
+  onBlacklist = buildMatchFn(sites);
 };
 
 
@@ -323,6 +325,8 @@ function init_listeners() {
     if(details.transitionType == 'generated')
       return;
 
+    if( onBlacklist(details.url) )
+      return;
 //    console.log("onCommitted tabid=", details.tabId, "url=",details.url, "transitionType=", details.transitionType);
     // attach our state tracker to the tab
     var state = new UnsourcedState( details.url,
@@ -332,7 +336,7 @@ function init_listeners() {
 
 
     // if site is whitelisted (and not blacklisted), start a lookup immediately
-    if(!onBlacklist(details.url) && onWhitelist(details.url)) {
+    if(onWhitelist(details.url)) {
       console.log(details.tabId +": new page, permitted: ", details.url);
       state.startLookup();
     } else {
