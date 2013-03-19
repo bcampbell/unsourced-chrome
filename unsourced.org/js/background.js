@@ -211,7 +211,7 @@ var compileWhitelist = function () {
   onWhitelist = buildMatchFn(sites);
 };
 
-// replace onBlacklist with a function that returns true for whitelisted sites
+// replace onBlacklist with a function that returns true for blacklisted sites
 var compileBlacklist = function () {
 //  console.log("Recompiling onBlacklist");
   var built_in_blacklist = ["unsourced.org"];
@@ -286,7 +286,19 @@ function update_gui(tabid, state)
         if( ad.status=='found') {
           badge_txt = "" + ad.sources.length;
 //          badge_colour = ad.needs_sourcing ? "#cc0000" : "#888888";
-          tooltip_txt = "" + ad.sources.length + " sources, " + ad.labels.length + " warning labels";
+          var src_txt;
+          switch(ad.sources.length) {
+            case 0: src_txt="no sources"; break;
+            case 1: src_txt="1 source"; break;
+            default: src_txt="" + ad.sources.length + " sources"; break;
+          }
+          var label_txt;
+          switch(ad.sources.length) {
+            case 0: label_txt="no warning labels"; break;
+            case 1: label_txt="1 warning label"; break;
+            default: label_txt="" + ad.labels.length + " warning labels"; break;
+          }
+          tooltip_txt = src_txt + ", " + label_txt;
           icon_img = "img/sourced.png";
         } else {
           tooltip_txt = "no sources or warning labels";
@@ -302,6 +314,9 @@ function update_gui(tabid, state)
   if(state.isSourcingRequired()) {
     icon_img = "img/missingsources.png";
     tooltip_txt = "Sources missing";
+    if(badge_txt=="")
+      badge_txt = "0";
+    badge_colour = "#ff0000";
   }
 
 
