@@ -22,6 +22,7 @@
       <div class="toggle-targ">
         <textarea readonly class="listedit" id="builtin-whitelist" spellcheck="false" style="white-space: nowrap; overflow: auto;">
         </textarea>
+        <p class="explain">(This is the built-in list. You can't modify it)</p>
       </div>
     </div>
 
@@ -39,9 +40,15 @@
         </div>
     </div>
 
-     <h2>Other options</h2> 
-    <input type="checkbox" id="debug" name="debug" />
-    <label for="debug">Show debug info in popup window?</label>
+    <h2>Other options</h2> 
+    <div>
+      <input type="checkbox" id="show-overlays" name="show-overlays" />
+      <label for="show-overlays">Show warning labels overlaid upon page?</label>
+    </div>
+    <div>
+      <input type="checkbox" id="debug" name="debug" />
+      <label for="debug">Show debug info in popup window?</label>
+    </div>
 
 
     <div class="options-form-buttons">

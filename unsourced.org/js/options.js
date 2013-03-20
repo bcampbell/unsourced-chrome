@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     $(blacklist).val(blacklist_str);
 */
     $('#debug').prop('checked', opts.debug);
+    $('#show-overlays').prop('checked', opts.show_overlays);
   }
 
   function fetch() {
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     opts.debug = $('#debug').prop('checked');
+    opts.show_overlays = $('#show-overlays').prop('checked');
 //is(':checked');
     return opts;
   }

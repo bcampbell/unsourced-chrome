@@ -47,6 +47,14 @@ function showWarningLabels( labels ) {
 
 }
 
+function hideWarningLabels() {
+/* UNTESTED
+  var overlay = unsrced();
+  for (var i = overlay.children.length - 1; i >= 0; i--) {
+    overlay.removeChild(overlay.children[i]);
+  }
+*/
+}
 
 
 
@@ -213,6 +221,8 @@ chrome.extension.onMessage.addListener(
     var method = request.method;
     if (method == 'showWarningLabels') {
       showWarningLabels(request.labels);
+    } else if (method == 'hideWarningLabels') {
+      hideWarningLabels();
     }/* else if (method == 'examinePage') {
       sendResponse(examinePage());
     }*/

@@ -126,7 +126,7 @@ TabTracker = {};
 
 
 /* extension options - (loaded from storage in startup() and changed via storeOptions() */
-options = [];
+options = {};
 
 
 // returns a function that can test a url against the list of sites
@@ -257,11 +257,13 @@ function update_gui(tabid, state)
   // ready to add overlays to the webpage (eg warning labels)?
   if(state.lookupState=="ready" && state.contentReady==true && state.overlaysApplied!==true) {
     if( state.lookupResults.labels ) {
-      chrome.tabs.sendMessage(
-        tabid,
-        {'method': 'showWarningLabels', 'labels': state.lookupResults.labels}
-      );
-      state.overlaysApplied = true;
+      if(options.show_overlays) {
+        chrome.tabs.sendMessage(
+          tabid,
+          {'method': 'showWarningLabels', 'labels': state.lookupResults.labels}
+        );
+        state.overlaysApplied = true;
+      }
     }
   }
 
@@ -417,6 +419,12 @@ function storeOptions(new_options) {
     compileBlacklist();
   }
 
+
+  if( 'show_overlays' in new_options ) {
+    // TODO: update overlays in existing tabs
+    // (tried this, but ran into problem with tabs.sendMessage() not returning...
+    // try again another time)
+  }
 }
 
 
@@ -424,6 +432,7 @@ function startup() {
   var default_options = {
     'search_server':'http://unsourced.org',
     'debug': false,
+    'show_overlays': true,
     'user_whitelist': [],
     'user_blacklist': []
   };
