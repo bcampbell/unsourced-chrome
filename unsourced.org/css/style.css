@@ -1,3 +1,5 @@
+/* stylesheet for popup and options page */
+
 /**********************************************************************
  * BASE STYLES
  */
@@ -6,7 +8,7 @@
 body {
     font-family: Helvetica, Arial, Sans-Serif;
     margin: 0;
-    padding: 0em;
+    padding: 0;
     font-size: smaller;
     color: #595959;
 }
@@ -17,14 +19,71 @@ a:link { color: #262626; }
 a:visited { color: #000; }
 a:hover { color: #262626; text-decoration: underline; }
 a:visited:hover { color: #000; }
+a:focus { outline: none; }   
+
+/***************************************
+ * LAYOUT
+ */
+
+.l-options-page {
+    max-width: 40em;
+    margin: auto;
+}
 
 
+/****
+ * ultra-noddy nestable grid system
+ */
+.l-row {
+}
+
+.l-row:after {
+    content: '';
+    clear: both;
+    display: block;
+}
+
+
+.l-col25, .l-col33, .l-col50, .l-col66, .l-col75 {
+    display: block;
+    float:left;
+    margin: 0;
+    padding: 0 0.3em;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.l-col25:last-child,
+.l-col33:last-child,
+.l-col50:last-child,
+.l-col66:last-child,
+.l-col75:last-child {
+  padding-right: 0;
+}
+
+.l-col25:first-child,
+.l-col33:first-child,
+.l-col50:first-child,
+.l-col66:first-child,
+.l-col75:first-child {
+  padding-left: 0;
+}
+
+.l-col25 { width: 25%; }
+.l-col33 { width: 33.3333%; }
+.l-col50 { width: 50%; }
+.l-col66 { width: 66.6666%; }
+.l-col75 { width: 75%; }
 
 
 
 /****************************************
  * MODULES
  */
+
+.options-page {
+    font-size: 110%;
+}
 
 /*****
  * a user-presented timestamp (eg when an action was performed)
@@ -207,6 +266,50 @@ a.btn:visited {
     font-style: italic;
     color: #888;
 }
+
+
+.listedit {
+    width: 100%;
+    min-height: 8em;
+}
+
+
+.options-form-buttons {
+    margin-top: 1em;
+}
+
+.options-form-buttons input {
+    font-size: 120%;
+}
+
+
+/****/
+
+.toggle {
+    font-size: 110%;
+    -webkit-appearance: none;
+}
+
+.toggle+label:hover {
+    text-decoration: underline;
+}
+
+.toggle:after {
+    content: "\25b6";
+}
+.toggle:checked:after {
+    content: "\25bc";
+}
+
+.toggle-targ {
+    display:none;
+}
+
+.toggle:checked ~ .toggle-targ {
+    display: block;
+    margin-left: 2em;
+}
+
 
 /**** MISC stuff - needs tidying ****/
 

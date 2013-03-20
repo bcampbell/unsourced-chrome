@@ -207,15 +207,14 @@ var onBlacklist = function (location) {
 // replace onWhitelist with a function that returns true for whitelisted sites
 var compileWhitelist = function () {
 //  console.log("Recompiling onWhitelist");
-  var sites = news_sites.concat(options.user_whitelist);
+  var sites = getBuiltInWhiteList().concat(options.user_whitelist);
   onWhitelist = buildMatchFn(sites);
 };
 
 // replace onBlacklist with a function that returns true for blacklisted sites
 var compileBlacklist = function () {
 //  console.log("Recompiling onBlacklist");
-  var built_in_blacklist = ["unsourced.org"];
-  var sites = built_in_blacklist.concat(options.user_blacklist);
+  var sites = getBuiltInBlackList().concat(options.user_blacklist);
   onBlacklist = buildMatchFn(sites);
 };
 
@@ -394,6 +393,13 @@ function init_listeners() {
 
 }
 
+function getBuiltInWhiteList() {
+  return news_sites;
+}
+
+function getBuiltInBlackList() {
+  return ["unsourced.org"];
+}
 
 //
 function storeOptions(new_options) {
@@ -435,7 +441,7 @@ function startup() {
 
   });
 }
-  
+
 startup();
 
 

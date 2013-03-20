@@ -3,31 +3,51 @@
   <head><title>Unsourced options</title></head>
     <link rel="stylesheet" href="css/style.css" type="text/css">
   </head>
-  <body>
-    <h1>Unsourced options</h1>
+  <body class="l-options-page options-page">
+    <h1><img src="img/logo.png" alt="Unsourced.org logo" /> extension options</h1>
 
-    <p>Yes, this is currently pretty ugly. It will be tarted up :-)</p>
     <form>
 
+    <h2>Sites to examine</h2>
+    <p>The unsourced extension only wants to examine news articles. It has a
+    built-in list of news sites, and will also check web pages for
+    <a href="http://microformats.org/wiki/hNews">hnews</a>, <a href="http://schema.org/Article">schema.org</a> or <a href="http://ogp.me/#type_article">opengraph data</a>.</p>
+
+    <p>You can also add your own list of sites to treat as news sites.</p>
+
+
+    <div>
+      <input class="toggle" type="checkbox" id="toggle-builtin-whitelist" />
+      <label for="toggle-builtin-whitelist">Show builtin list</label>
+      <div class="toggle-targ">
+        <textarea readonly class="listedit" id="builtin-whitelist" spellcheck="false" style="white-space: nowrap; overflow: auto;">
+        </textarea>
+      </div>
+    </div>
+
+    <div>
+        <input class="toggle" type="checkbox" id="toggle-user-whitelist" />
+        <label for="toggle-user-whitelist">Edit user list</label>
+        <div class="toggle-targ">
+          <textarea class="listedit" id="user-whitelist" spellcheck="false" style="white-space: nowrap; overflow: auto;">
+          </textarea>
+          <ul class="explain">
+            <li>One site per line<li/>
+            leading dot matches any subdomain  eg "<code>.example.com</code>" matches "<code>www.example.com</code>" and "<code>bad.example.com</code>"</li>
+            <li>use trailing "<code>...</code>" as wildcard eg "<code>example.com/news/...</code>"</li>
+          </ul>
+        </div>
+    </div>
+
+     <h2>Other options</h2> 
     <input type="checkbox" id="debug" name="debug" />
     <label for="debug">Show debug info in popup window?</label>
-    <br/>
 
-    <br/>
-    <p>Sites on the whitelist will be assumed to be news, and will be checked against the unsourced.org db...<br/>
-    ...unless they appear in the blacklist.</p>
 
-    <label for="user-whitelist">Whitelist</label>
-    <textarea id="user-whitelist" spellcheck="false" style="white-space: nowrap; overflow: auto;">
-    </textarea>
-    <br/>
-    <label for="user-blacklist">Blacklist</label>
-    <textarea id="user-blacklist" spellcheck="false" style="white-space: nowrap; overflow: auto;">
-    </textarea>
-
-    <br/>
-    <input type="submit" id="save" name="save" value="Save" />
+    <div class="options-form-buttons">
+    <input type="submit" id="save" name="save" value="Save changes" />
     <input type="reset" id="revert" name="revert" value="Revert" />
+    </div>
     </form>
   </body>
     <script src="js/lib/jquery.js"></script>

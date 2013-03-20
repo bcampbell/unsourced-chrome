@@ -12,21 +12,26 @@ document.addEventListener('DOMContentLoaded', function() {
     whitelist.defaultValue = whitelist_str; // so revert button will work
     $(whitelist).val(whitelist_str);
 
-    var blacklist = document.getElementById('user-blacklist');
+    var builtin_whitelist = document.getElementById('builtin-whitelist');
+    var builtin_whitelist_str = bg.getBuiltInWhiteList().join("\n");
+    builtin_whitelist.defaultValue = builtin_whitelist_str; // so revert button won't screw up the display :-)
+    $(builtin_whitelist).val(builtin_whitelist_str);
+
+/*    var blacklist = document.getElementById('user-blacklist');
     var blacklist_str = opts.user_blacklist.join("\n");
     blacklist.defaultValue = blacklist_str; // so revert button will work
     $(blacklist).val(blacklist_str);
-
+*/
     $('#debug').prop('checked', opts.debug);
   }
 
   function fetch() {
     var opts = {};
     opts.user_whitelist = $("#user-whitelist").val().split("\n");
-    opts.user_blacklist = $("#user-blacklist").val().split("\n");
-
     opts.user_whitelist = opts.user_whitelist.filter(function(a) {return a.trim()!="";});
-    opts.user_blacklist = opts.user_blacklist.filter(function(a) {return a.trim()!="";});
+
+//    opts.user_blacklist = $("#user-blacklist").val().split("\n");
+//    opts.user_blacklist = opts.user_blacklist.filter(function(a) {return a.trim()!="";});
 
 
     opts.debug = $('#debug').prop('checked');
